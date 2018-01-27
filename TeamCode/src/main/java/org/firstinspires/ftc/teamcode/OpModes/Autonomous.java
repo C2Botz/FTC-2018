@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 import org.firstinspires.ftc.teamcode.AllianceColor;
 import org.firstinspires.ftc.teamcode.AutoMode;
+import org.firstinspires.ftc.teamcode.Direction;
 import org.firstinspires.ftc.teamcode.HardwareRobot;
 
 /**
@@ -22,6 +23,8 @@ public class Autonomous extends LinearOpMode {
 
     static final float DRIVE_SPEED= 0.6f;
     static final float TURN_SPEED = 0.5f;
+    static final float STRAFE_SPEED = 0.5f;
+    static final float GRABBER_SPEED = 0.5f;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -32,41 +35,57 @@ public class Autonomous extends LinearOpMode {
             switch(robot.autoMode){
 
                 case IDOL_SIDE:
+                    telemetry.addData("Auto Mode", "IDOL_SIDE");
+                    telemetry.update();
+                    //Drive to cryptobox
+                    if(robot.allianceColor == AllianceColor.RED){
+                        strafeForSeconds(1.25f, Direction.LEFT);
+                    }else if(robot.allianceColor == AllianceColor.BLUE){
+                        strafeForSeconds(1.25f, Direction.RIGHT);
+                    }
 
-                    //Drive and knock off particle
-                    driveForSeconds(2, DRIVE_SPEED, DRIVE_SPEED);
+
+                    //Push block to cryptobox
+                    driveForSeconds(0.25f, -DRIVE_SPEED, -DRIVE_SPEED);
+                    //Open Grabber
+                    moveGrabberForSeconds(.75f, GRABBER_SPEED);
+                    //Backup
+                    driveForSeconds(0.1f, DRIVE_SPEED, DRIVE_SPEED);
+
+                    //Push Glyph
+                    driveForSeconds(0.25f, -DRIVE_SPEED, -DRIVE_SPEED);
 
                     //Backup
-                    driveForSeconds(1, -DRIVE_SPEED, -DRIVE_SPEED);
-
-                    if(robot.allianceColor == AllianceColor.RED){
-                        //Turn left, towards Cryptobox
-                        driveForSeconds(1, -TURN_SPEED, TURN_SPEED);
-                    }else{
-                        //Turn right, towards Cryptobox
-                        driveForSeconds(1, TURN_SPEED, -TURN_SPEED);
-                    }
-                    //Drive into safe zone
-                    driveForSeconds(2, DRIVE_SPEED, DRIVE_SPEED);
+                    driveForSeconds(0.1f, DRIVE_SPEED, DRIVE_SPEED);
 
                     break;
 
                 case CRYPTOBOX_SIDE:
-                    //Drive and knock off particle
-                    driveForSeconds(2, DRIVE_SPEED, DRIVE_SPEED);
+                    telemetry.addData("Auto Mode", "CRYPTOBOX_SIDE");
+                    telemetry.update();
+                    //Drive to crytobox
+                    driveForSeconds(0.5f, -DRIVE_SPEED, -DRIVE_SPEED);
 
-                    //Backup, over balancing stone
-                    driveForSeconds(4, -DRIVE_SPEED, -DRIVE_SPEED);
-                    if(robot.allianceColor == AllianceColor.RED){
-                        //Turn left, towards Cryptobox
-                        driveForSeconds(1, -TURN_SPEED, TURN_SPEED);
-                    }else{
-                        //Turn right, towards Cryptobox
-                        driveForSeconds(1, TURN_SPEED, -TURN_SPEED);
+                    //Strafe to Cryptobx Column
+                    if(robot.allianceColor == AllianceColor.RED) {
+                        strafeForSeconds(0.5f, Direction.LEFT);
+                    }else if(robot.allianceColor == AllianceColor.BLUE){
+                        strafeForSeconds(0.5f, Direction.RIGHT);
                     }
 
-                    //Drive into safe zone
-                    driveForSeconds(3, DRIVE_SPEED, DRIVE_SPEED);
+                    //Push block in
+                    driveForSeconds(0.2f, -DRIVE_SPEED, -DRIVE_SPEED);
+
+                    //Open Grabber
+                    moveGrabberForSeconds(.75f, GRABBER_SPEED);
+                    //Backup
+                    driveForSeconds(0.1f, DRIVE_SPEED, DRIVE_SPEED);
+
+                    //Push Glyph
+                    driveForSeconds(0.25f, -DRIVE_SPEED, -DRIVE_SPEED);
+
+                    //Backup
+                    driveForSeconds(0.1f, DRIVE_SPEED, DRIVE_SPEED);
                     break;
 
                 default:
@@ -80,14 +99,42 @@ public class Autonomous extends LinearOpMode {
         }
     }
 
+    public void strafeForSeconds(float seconds, Direction direction){
+        runtime.reset();
+        if(direction == Direction.LEFT){
+            robot.strafeLeft(STRAFE_SPEED);
+        }else if(direction == Direction.RIGHT){
+            robot.strafeRight(STRAFE_SPEED);
+        }
+        while (opModeIsActive() && (runtime.seconds() < seconds)){
+
+        }
+        robot.stopRobot();
+        runtime.reset();
+
+    }
+
+    public void moveGrabberForSeconds(float seconds, float grabberPower){
+
+        runtime.reset();
+        robot.setGrabberPower(grabberPower);
+
+        while (opModeIsActive() && (runtime.seconds() < seconds)){
+
+        }
+        robot.stopRobot();
+        runtime.reset();
+    }
 
     public void driveForSeconds(float seconds, float leftSpeed, float rightSpeed){
 
+        runtime.reset();
         robot.driveAtSpeed(leftSpeed, rightSpeed);
 
         while (opModeIsActive() && (runtime.seconds() < seconds)){
 
         }
+        robot.stopRobot();
         runtime.reset();
     }
 }
