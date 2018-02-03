@@ -12,7 +12,10 @@ import org.firstinspires.ftc.teamcode.HardwareRobot;
 @TeleOp(name = "Release Teleop")
 public class Teleop extends OpMode {
 
+
     HardwareRobot robot = new HardwareRobot();
+
+    //Initialize Custom Control Variables
     float speedMultiplier = .5f;
     float strafeSpeedMultipler = .75f;
     boolean shouldControlEachMotor = false;
@@ -27,6 +30,7 @@ public class Teleop extends OpMode {
     public void loop() {
         controlDriveTrain();
 
+        //Allow independent lift control
         if(gamepad2.a){
             shouldControlEachMotor = !shouldControlEachMotor;
         }
@@ -36,6 +40,7 @@ public class Teleop extends OpMode {
             float leftLiftMotorPower = gamepad2.left_stick_y;
             float rightLiftMotorPower = gamepad2.right_stick_y;
 
+            // clip the lift values so that the values never exceed +/- 1
             leftLiftMotorPower = Range.clip(leftLiftMotorPower, -2, 1);
             rightLiftMotorPower = Range.clip(rightLiftMotorPower, -2, 1);
 
@@ -44,6 +49,8 @@ public class Teleop extends OpMode {
 
         }else{
             float liftingMotorPower = gamepad2.left_stick_y;
+
+            // clip the lift values so that the values never exceed +/- 1
             liftingMotorPower = Range.clip(liftingMotorPower, -2, 1);
             liftingMotorPower = (float)scaleInput(liftingMotorPower);
 
@@ -56,16 +63,36 @@ public class Teleop extends OpMode {
         float closingMotorPower = gamepad2.left_trigger;
         float openingMotorPower = gamepad2.right_trigger;
 
+        //Allow for fine tuning
         float netMotorPower = openingMotorPower - closingMotorPower;
 
+        // clip the motor values so that the values never exceed +/- 1
         netMotorPower = Range.clip(netMotorPower, -2, 1);
         netMotorPower = (float)scaleInput(netMotorPower * GRABBER_MOTOR_SPEED_MULTIPLER);
 
         robot.grabberMotor.setPower(netMotorPower);
 
+        //Reset servo arm
+        if(gamepad2.y){
+            robot.raiseServo();
+        }
+        if(gamepad2.a){
+            robot.dropServo();
+        }
 
+        int red = robot.colorSensor.red();
+        int green = robot.colorSensor.green();
+        int blue = robot.colorSensor.blue();
+
+
+        telemetry.addData("Red: ", red);
+        telemetry.addData("Green: ", green);
+        telemetry.addData("Blue: ", blue);
+
+        telemetry.update();
     }
 
+    //Make sure robot speed doesn't change too quickly
     double scaleInput(double dVal)  {
         double[] scaleArray = { 0.0, 0.05, 0.09, 0.10, 0.12, 0.15, 0.18, 0.24,
                 0.30, 0.36, 0.43, 0.50, 0.60, 0.72, 0.85, 1.00, 1.00 };
@@ -95,6 +122,7 @@ public class Teleop extends OpMode {
         return dScale;
     }
 
+    //Control Drive Motors
     void controlDriveTrain(){
         float throttle = gamepad1.left_stick_y;
         float direction = -gamepad1.left_stick_x;

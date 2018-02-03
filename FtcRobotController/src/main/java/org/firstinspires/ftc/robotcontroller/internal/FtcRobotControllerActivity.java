@@ -517,9 +517,9 @@ public class FtcRobotControllerActivity extends Activity
         System.out.println("Blue Alliance Selected!");
         allianceColorString = "BLUE";
     }else if(id == R.id.auto_idol) {
-        autoModeString = "CRYPTOBOX_SIDE";
-    }else if(id == R.id.auto_cryptobox) {
         autoModeString = "IDOL_SIDE";
+    }else if(id == R.id.auto_cryptobox) {
+        autoModeString = "CRYPTOBOX_SIDE";
     }
 
    return super.onOptionsItemSelected(item);

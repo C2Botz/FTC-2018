@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
@@ -22,6 +24,10 @@ public class HardwareRobot {
     public DcMotor leftLiftMotor = null;
     public DcMotor rightLiftMotor = null;
 
+    public Servo jewelPusherServo = null;
+
+    public ColorSensor colorSensor = null;
+
     public DcMotor grabberMotor = null;
 
     public AutoMode autoMode = AutoMode.NULL;
@@ -30,6 +36,8 @@ public class HardwareRobot {
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
     private ElapsedTime period  = new ElapsedTime();
+
+    static final float lowerServoPosition = 0.65f;
 
     /* Initialize standard Hardware interfaces */
     public void init(HardwareMap ahwMap) {
@@ -49,6 +57,11 @@ public class HardwareRobot {
         grabberMotor = hwMap.get(DcMotor.class, "grabberMotor");
         //End Initialize Motors
 
+        jewelPusherServo = hwMap.get(Servo.class, "jewelServo");
+        jewelPusherServo.setDirection(Servo.Direction.FORWARD);
+
+        colorSensor = hwMap.get(ColorSensor.class, "colorSensor");
+
         //Set Motor Directions
         frontLeftMotor.setDirection(DcMotor.Direction.FORWARD);
         frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
@@ -61,7 +74,6 @@ public class HardwareRobot {
         grabberMotor.setDirection(DcMotor.Direction.FORWARD);
         //End Set Motor Directions
 
-
         // Set all motors to zero power
         frontLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
@@ -72,8 +84,10 @@ public class HardwareRobot {
         rightLiftMotor.setPower(0);
 
         grabberMotor.setPower(0);
-        //End Power Set
 
+        jewelPusherServo.setPosition(0);
+
+        //End Power Set
 
         // Set all motors to run without encoders.
         // May want to use RUN_USING_ENCODERS if encoders are installed.
@@ -126,6 +140,22 @@ public class HardwareRobot {
         }
     }
 
+    public void stopRobot(){
+        frontLeftMotor.setPower(0);
+        frontRightMotor.setPower(0);
+        rearLeftMotor.setPower(0);
+        rearRightMotor.setPower(0);
+
+        grabberMotor.setPower(0);
+        rightLiftMotor.setPower(0);
+        leftLiftMotor.setPower(0);
+    }
+
+    //Positive = Opening, Negative = Closing
+    public void setGrabberPower(float power){
+        grabberMotor.setPower(power);
+    }
+
     public void driveAtSpeed(float leftSpeed, float rightSpeed){
         frontLeftMotor.setPower(leftSpeed);
         rearLeftMotor.setPower(leftSpeed);
@@ -146,5 +176,49 @@ public class HardwareRobot {
         rearRightMotor.setPower(strafeSpeed);
         frontLeftMotor.setPower(strafeSpeed);
         rearLeftMotor.setPower(-strafeSpeed);
+    }
+
+    public void dropServo(){
+        jewelPusherServo.setPosition(lowerServoPosition);
+    }
+
+    public void raiseServo(){
+        jewelPusherServo.setPosition(0);
+    }
+
+    public Color getProbableColor(){
+        int red = colorSensor.red();
+        int green = colorSensor.green();
+        int blue = colorSensor.blue();
+
+        int largestValue = Math.max(red, Math.max(green, blue));
+
+        if(largestValue == red){
+            return Color.RED;
+        }else if(largestValue == green){
+            return Color.GREEN;
+        }else if(largestValue == blue){
+            return Color.BLUE;
+        }
+
+        if(largestValue == 0){
+            return Color.BLACK;
+        }
+        return Color.WHITE;
+    }
+
+    public boolean isAllainceColor(Color color){
+        return colorsAreEqual(this.allianceColor, color);
+    }
+
+    public boolean colorsAreEqual(AllianceColor allianceColor, Color color){
+
+        String colorString = color.toString();
+        String allainceString = allianceColor.toString();
+
+        if(colorString == allainceString){
+            return true;
+        }
+        return false;
     }
 }
